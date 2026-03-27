@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeGuard • Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <div class="w-72 bg-slate-900 text-white flex flex-col">
+        <div class="px-8 py-8 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl">🔍</div>
+                <h1 class="text-2xl font-bold tracking-tight">FakeGuard</h1>
+            </div>
+            <p class="text-slate-400 text-sm mt-1">IEEE 2026 • AI-Powered Detection</p>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-6 py-4 text-white bg-slate-800 rounded-2xl font-medium">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-4 hover:bg-slate-800 rounded-2xl transition">
+                <i class="fas fa-file-alt"></i> New Prediction
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-4 hover:bg-slate-800 rounded-2xl transition">
+                <i class="fas fa-history"></i> Prediction History
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-4 hover:bg-slate-800 rounded-2xl transition">
+                <i class="fas fa-users"></i> Community
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-4 hover:bg-slate-800 rounded-2xl transition">
+                <i class="fas fa-cog"></i> Model Settings
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-slate-800 text-sm text-slate-400">
+            Powered by DeBERTa + XGBoost<br>
+            <span class="text-emerald-400">• Model Online • 98.7% Accuracy</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-8">
+
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-4xl font-semibold text-slate-800">Welcome back</h2>
+                <p class="text-slate-500">Let's detect fake job postings today</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="bg-white shadow rounded-3xl px-5 py-2 flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                    Model Ready
+                </div>
+                <div class="bg-white text-slate-700 px-6 py-3 rounded-3xl font-medium shadow flex items-center gap-2">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                    <span>Researcher</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Statistics Row -->
+        <div class="grid grid-cols-4 gap-6 mb-10">
+            <div class="glass border border-slate-200 rounded-3xl p-6 shadow">
+                <p class="text-slate-500 text-sm">Total Predictions</p>
+                <p class="text-4xl font-bold text-slate-800 mt-2">{{ total_predictions|default:0 }}</p>
+                <p class="text-emerald-600 text-sm mt-3">↑ This month</p>
+            </div>
+            <div class="glass border border-slate-200 rounded-3xl p-6 shadow">
+                <p class="text-slate-500 text-sm">Fake Jobs Detected</p>
+                <p class="text-4xl font-bold text-red-600 mt-2">{{ fake_detected|default:0 }}</p>
+                <p class="text-red-600 text-sm mt-3">{{ fake_percentage|default:0 }}% of total</p>
+            </div>
+            <div class="glass border border-slate-200 rounded-3xl p-6 shadow">
+                <p class="text-slate-500 text-sm">Community Messages</p>
+                <p class="text-4xl font-bold text-slate-800 mt-2">{{ total_messages|default:0 }}</p>
+                <p class="text-blue-600 text-sm mt-3">Today</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+            <!-- Job Prediction Section -->
+            <div class="col-span-7">
+                <div class="glass border border-slate-200 rounded-3xl p-8 shadow">
+                    <h3 class="text-2xl font-semibold mb-6">Analyze New Job Posting</h3>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="check_job" value="1">
+                        {{ form.as_p }}
+                        <button type="submit"
+                                class="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl text-lg transition">
+                            🚀 Run AI Analysis
+                        </button>
+                    </form>
+
+                    {% if result %}
+    {% if result.error %}
+        <div class="mt-8 p-6 bg-red-50 border border-red-300 text-red-700 rounded-3xl">
+            Error: {{ result.error }}
+        </div>
+    {% else %}
+        <div class="mt-8 p-8 rounded-3xl text-center 
+            {% if result.is_fraudulent %}
+                bg-red-50 border-2 border-red-500
+            {% else %}
+                bg-emerald-50 border-2 border-emerald-500
+            {% endif %}">
+
+            <!-- Show ONLY Real or Fake -->
+            <h2 class="text-4xl font-bold mb-4">
+                {% if result.is_fraudulent %}
+                    ❌ Fake
+                {% else %}
+                    ✅ Real
+                {% endif %}
+            </h2>
+
+            <!-- Show ONLY Real Confidence -->
+            <p class="text-xl mt-3">
+                Real Confidence: <strong>{{ result.confidence }}%</strong>
+            </p>
+
+        </div>
+    {% endif %}
+{% endif %}
+                </div>
+            </div>
+
+            <!-- Community Chat Section -->
+            <div class="col-span-5">
+                <div class="glass border border-slate-200 rounded-3xl shadow h-full flex flex-col">
+                    <div class="px-8 py-6 border-b flex items-center justify-between bg-slate-900 text-white rounded-t-3xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-comments text-2xl"></i>
+                            <h3 class="font-semibold text-xl">Community Chat</h3>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chatMessages">
+                        {% for msg in chat_messages %}
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-sm">U</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-slate-800">{{ msg.username }}</div>
+                                <div class="text-slate-700">{{ msg.message }}</div>
+                                <div class="text-xs text-slate-400 mt-1">{{ msg.created_at|time:"H:i" }}</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-slate-400 py-12">No messages yet. Be the first to start the conversation!</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="p-6 border-t bg-white rounded-b-3xl">
+                        <form method="post" action="{% url 'send_chat_message' %}" class="flex gap-3">
+                            {% csrf_token %}
+                            <input type="text" name="username" placeholder="Your Name" 
+                                   class="w-1/3 px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                            <textarea name="message" rows="1" placeholder="Type your message..." required
+                                      class="flex-1 px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                            <button type="submit" class="px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        const chatDiv = document.getElementById("chatMessages");
+        if (chatDiv) chatDiv.scrollTop = chatDiv.scrollHeight;
+    };
+</script>
+
+</body>
+</html>
