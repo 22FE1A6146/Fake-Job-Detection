@@ -1,0 +1,10 @@
+Django==5.1.7
+torch
+transformers
+sentence-transformers
+xgboost
+scikit-learn
+neattext
+tqdm
+sentencepiece
+tiktoken
